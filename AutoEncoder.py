@@ -16,7 +16,7 @@ from pathlib import Path
 
 class Autoencoder(nn.Module):
 
-    def __init__(self, image_size=64,num_channels=float(3), latent_dims=128, num_filters=32, do_sampling=False):
+    def __init__(self, image_size=64,num_channels=3, latent_dims=128, num_filters=32, do_sampling=False):
         super(Autoencoder, self).__init__()
 
         self.latent_dims  = latent_dims
@@ -28,11 +28,11 @@ class Autoencoder(nn.Module):
         # Encoder
         self.conv_encoder = nn.Sequential(
             # TODO: Build the convolutional layers (torch.nn.Conv2d) here
-            torch.nn.Conv2d(self.num_channels, self.num_channels, 4, 2, 1,bias=False),
+            torch.nn.Conv2d(self.num_channels, self.num_channels, 4, 2, 1),
             torch.nn.ReLU(),
-            torch.nn.Conv2d(self.num_channels,self.num_channels, 4, 2, 1,bias=False),
+            torch.nn.Conv2d(self.num_channels,self.num_channels, 4, 2, 1),
             torch.nn.ReLU(),
-            torch.nn.Conv2d(self.num_channels,self.num_channels, 4, 2, bias=False),
+            torch.nn.Conv2d(self.num_channels,self.num_channels, 4, 2, 1),
             torch.nn.ReLU()
         )
 
@@ -40,7 +40,7 @@ class Autoencoder(nn.Module):
         # TODO: Match the dimensionality of the first and last layer here!
         self.fc_lin_down = nn.Linear(64*self.num_filters, 8 * self.num_filters)
         self.fc_mu       = nn.Linear(8 * self.num_filters, self.latent_dims)
-        self.fc_logvar   = nn.Linear(self.latent_dims, self.latent_dims)
+        self.fc_logvar   = nn.Linear(8 * self.num_filters, self.latent_dims)
         self.fc_z        = nn.Linear(self.latent_dims, 8 * self.num_filters)
         self.fc_lin_up   = nn.Linear(8 * self.num_filters, 64*self.num_filters)
 
@@ -48,23 +48,29 @@ class Autoencoder(nn.Module):
         self.conv_decoder = nn.Sequential(
             # TODO: Implement the reverse of the encoder here using torch.nn.ConvTranspose2d layers
             # The last activation here should be a sigmoid to keep the pixel values clipped in [0, 1)
-            torch.nn.Conv2d(self.num_channels, self.num_channels, (4,4), 2, 1),
+            torch.nn.ConvTranspose2d(self.num_filters, self.num_channels, (4,4), 2, 1),
             torch.nn.ReLU(),
-            torch.nn.Conv2d(self.num_channels,self.num_channels, (4,4), 2, 1),
+            torch.nn.ConvTranspose2d(self.num_channels,self.num_channels, (4,4), 2, 1),
             torch.nn.ReLU(),
-            torch.nn.Conv2d(self.num_channels,self.num_channels, (4,4), 2, 1),
+            torch.nn.ConvTranspose2d(self.num_channels,self.num_channels, (4,4), 2, 1),
             nn.Sigmoid(),
         )
 
     def encode(self, x):
+        print(x.dtype)
+        x=x.float()
         ''' Encoder: output is (mean, log(variance))'''
         x       = self.conv_encoder(x)
         # Here, we resize the convolutional output appropriately for a linear layer
         # TODO: Fill in the correct dimensionality for the reordering
         x       = x.view(-1, self.num_filters * 8 * 8)
+        print(x.shape)
         x       = self.fc_lin_down(x)
+        print(x.shape)
         x       = nn.functional.relu(x)
         mu      = self.fc_mu(x)
+        print(mu.shape)
+        print(x.shape)
         logvar  = self.fc_logvar(x)
         return mu, logvar
 
