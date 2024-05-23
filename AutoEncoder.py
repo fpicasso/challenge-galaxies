@@ -16,7 +16,7 @@ from pathlib import Path
 
 class Autoencoder(nn.Module):
 
-    def __init__(self, image_size=64,num_channels=3, latent_dims=128, num_filters=32, do_sampling=False):
+    def __init__(self, image_size=64,num_channels=float(3), latent_dims=128, num_filters=32, do_sampling=False):
         super(Autoencoder, self).__init__()
 
         self.latent_dims  = latent_dims
