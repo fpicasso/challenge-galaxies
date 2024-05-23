@@ -28,12 +28,12 @@ class Autoencoder(nn.Module):
         # Encoder
         self.conv_encoder = nn.Sequential(
             # TODO: Build the convolutional layers (torch.nn.Conv2d) here
-            torch.nn.Conv2d(self.num_channels, self.num_channels, (4,4), 2, 1),
+            torch.nn.Conv2d(self.num_channels, self.num_channels, 4, 2, 1,bias=False),
             torch.nn.ReLU(),
-            torch.nn.Conv2d(self.num_channels,self.num_channels, (4,4), 2, 1),
+            torch.nn.Conv2d(self.num_channels,self.num_channels, 4, 2, 1,bias=False),
             torch.nn.ReLU(),
-            torch.nn.Conv2d(self.num_channels,self.num_channels, (4,4), 2, 1),
-            torch.nn.ReLU(),
+            torch.nn.Conv2d(self.num_channels,self.num_channels, 4, 2, bias=False),
+            torch.nn.ReLU()
         )
 
         # Linear Encoder
