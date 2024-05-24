@@ -1,6 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+import torch
+import torchvision
+from torchvision.transforms import v2
 
 from astroNN.datasets import load_galaxy10
 from astroNN.datasets.galaxy10 import galaxy10cls_lookup, galaxy10_confusion
@@ -19,4 +22,4 @@ for img in imagesBarredSpiral:
     images_after_resize.append(img64.permute(1,2,0))
     print(img64.permute(1,2,0).shape)
 
-torch.save(image_list_final, "galaxy5")
+torch.save(images_after_resize, "galaxy5")
