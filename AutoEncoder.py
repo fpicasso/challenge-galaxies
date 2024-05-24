@@ -28,11 +28,11 @@ class Autoencoder(nn.Module):
         # Encoder
         self.conv_encoder = nn.Sequential(
             # TODO: Build the convolutional layers (torch.nn.Conv2d) here
-            torch.nn.Conv2d(self.num_channels, self.num_channels, 4, 2, 1),
+            torch.nn.Conv2d(self.num_channels, 8, 4, 2, 1),
             torch.nn.ReLU(),
-            torch.nn.Conv2d(self.num_channels,self.num_channels, 4, 2, 1),
+            torch.nn.Conv2d(8, 16, 4, 2, 1),
             torch.nn.ReLU(),
-            torch.nn.Conv2d(self.num_channels,self.num_channels, 4, 2, 1),
+            torch.nn.Conv2d(16, self.num_filters, 4, 2, 1),
             torch.nn.ReLU()
         )
 
@@ -48,29 +48,24 @@ class Autoencoder(nn.Module):
         self.conv_decoder = nn.Sequential(
             # TODO: Implement the reverse of the encoder here using torch.nn.ConvTranspose2d layers
             # The last activation here should be a sigmoid to keep the pixel values clipped in [0, 1)
-            torch.nn.ConvTranspose2d(self.num_filters, self.num_channels, (4,4), 2, 1),
+            torch.nn.ConvTranspose2d(self.num_filters, 16, (4,4), 2, 1),
             torch.nn.ReLU(),
-            torch.nn.ConvTranspose2d(self.num_channels,self.num_channels, (4,4), 2, 1),
+            torch.nn.ConvTranspose2d(16, 8, (4,4), 2, 1),
             torch.nn.ReLU(),
-            torch.nn.ConvTranspose2d(self.num_channels,self.num_channels, (4,4), 2, 1),
+            torch.nn.ConvTranspose2d(8, self.num_channels, (4,4), 2, 1),
             nn.Sigmoid(),
         )
 
     def encode(self, x):
-        print(x.dtype)
         x=x.float()
         ''' Encoder: output is (mean, log(variance))'''
         x       = self.conv_encoder(x)
         # Here, we resize the convolutional output appropriately for a linear layer
         # TODO: Fill in the correct dimensionality for the reordering
         x       = x.view(-1, self.num_filters * 8 * 8)
-        print(x.shape)
         x       = self.fc_lin_down(x)
-        print(x.shape)
         x       = nn.functional.relu(x)
         mu      = self.fc_mu(x)
-        print(mu.shape)
-        print(x.shape)
         logvar  = self.fc_logvar(x)
         return mu, logvar
 
